@@ -1,42 +1,61 @@
 import React, { useState } from "react";
-import {db} from "../firebase";
-import { collection, addDoc } from "firebase/firestore"; 
+import { auth } from "../firebase"; // Import the 'auth' instance from firebase.js
+import { signInWithEmailAndPassword } from "firebase/auth"; 
 
-function signup() {
-  const [name, setName] = useState("");
+function Login() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  const getData = async () => {
-    console.log(name);
-    console.log(password);
+  const handleLogin = async () => {
+    // Basic validation
+    if (!email || !password) {
+      setError("Email and password cannot be empty");
+      return;
+    }
+    setError(null); // Reset the error state
 
-
-    try{
-
-    const docRef = await addDoc(collection(db, "users"), {
-        first: name,
-        password: password,
-      });
-      console.log("Document written with ID: ", docRef.id);
+    try {
+      // Sign in using Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log("User logged in:", user.email);
+      setSuccess("Login successful! Welcome " + user.email);
     } catch (e) {
-      console.error("Error adding document: ", e);
+      console.error("Error logging in: ", e.message);
+      setError(e.message);
     }
   };
 
   return (
-    <div className="flex flex-col justify-center items-center bg-slate-200">
-      <h1>Sign Page</h1>
+    <div className="flex flex-col justify-center items-center bg-slate-200 h-screen">
+      <h1>Login Page</h1>
       <div>
-        <label htmlFor="">Name</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+        <label>Email</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="border-2 p-2 m-2"
+        />
       </div>
       <div>
-        <label htmlFor="">Password</label>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <label>Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="border-2 p-2 m-2"
+        />
       </div>
-      <button onClick={getData}>Submit</button>
+      <button onClick={handleLogin} className="bg-blue-500 text-white p-2 m-2">
+        Submit
+      </button>
+      {error && <p className="text-red-500">{error}</p>}
+      {success && <p className="text-green-500">{success}</p>}
     </div>
   );
 }
 
-export default signup;
+export default Login;
