@@ -1,13 +1,11 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyBFWP_yKFL7acakjewju6Ri_9JqaRpg7LE",
   authDomain: "mediauploader-fa0b7.firebaseapp.com",
@@ -21,7 +19,18 @@ const firebaseConfig = {
 // Initialize Firebase
 const firebase = initializeApp(firebaseConfig);
 const db = getFirestore(firebase);
-const analytics = getAnalytics(firebase);
 const auth = getAuth(firebase);
+const storage = getStorage(firebase);
 
-export { firebase, analytics, db , auth};
+// Set the persistence to local storage (default, but good to be explicit)
+setPersistence(auth, browserLocalPersistence);
+
+// Conditionally initialize Analytics (for web environments only)
+let analytics;
+isSupported().then((isSupported) => {
+  if (isSupported) {
+    analytics = getAnalytics(firebase);
+  }
+});
+
+export { firebase, analytics, db, auth, storage };
